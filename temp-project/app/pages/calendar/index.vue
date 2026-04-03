@@ -103,6 +103,13 @@
         @time-slot-click="handleTimeSlotClick"
         @event-click="handleEventClick"
       />
+      <CalendarDay
+        v-else-if="view === 'day'"
+        :current-date="currentDate"
+        :events="filteredEvents"
+        @time-slot-click="handleDayTimeSlotClick"
+        @event-click="handleEventClick"
+      />
     </section>
   </main>
 </template>
@@ -187,6 +194,10 @@ const handleEventClick = (event: any) => {
 
 const handleTimeSlotClick = (date: Date, hour: number) => {
   calendarStore.setCurrentDate(date)
+  calendarStore.openCreateModal()
+}
+
+const handleDayTimeSlotClick = (hour: number) => {
   calendarStore.openCreateModal()
 }
 

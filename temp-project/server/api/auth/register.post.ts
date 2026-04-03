@@ -1,6 +1,5 @@
 import { createError, defineEventHandler, readBody } from 'h3'
 import bcrypt from 'bcryptjs'
-import prisma from '~/server/utils/prisma'
 
 export default defineEventHandler(async (event) => {
   if (event.method !== 'POST') {

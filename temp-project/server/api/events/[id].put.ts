@@ -1,5 +1,4 @@
 import { defineEventHandler, getRouterParam, readBody } from 'h3'
-import prisma from '~/server/utils/prisma'
 import { getServerSession } from '#auth'
 
 export default defineEventHandler(async (event) => {

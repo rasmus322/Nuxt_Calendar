@@ -4,15 +4,15 @@
 generator client {
   provider = "prisma-client"
   output   = "../generated/prisma"
+  engineType = "binary"
 }
 
 datasource db {
-  provider = "postgresql"
-  url      = env("DATABASE_URL")
+  provider = "sqlite"
 }
 
 model User {
-  id        String    @id @default(uuid)
+  id        String    @id @default(uuid())
   email     String    @unique
   name      String?
   password  String
@@ -22,14 +22,14 @@ model User {
 }
 
 model Category {
-  id    String @id @default(uuid)
+  id    String @id @default(uuid())
   name  String @unique
   color String
   events Event[]
 }
 
 model Event {
-  id          String   @id @default(uuid)
+  id          String   @id @default(uuid())
   title       String
   description String?
   start       DateTime

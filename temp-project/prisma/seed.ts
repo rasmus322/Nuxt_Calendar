@@ -1,45 +1,33 @@
-import { PrismaClient } from '../generated/prisma'
+import Database from 'better-sqlite3'
+import path from 'path'
+import { fileURLToPath } from 'url'
 
-const prisma = new PrismaClient()
+const __filename = fileURLToPath(import.meta.url)
+const __dirname = path.dirname(__filename)
 
-async function main() {
-  // Создаем начальные категории
-  const categories = await Promise.all([
-    prisma.category.upsert({
-      where: { name: 'Работа' },
-      update: {},
-      create: { name: 'Работа', color: '#3B82F6' },
-    }),
-    prisma.category.upsert({
-      where: { name: 'Личное' },
-      update: {},
-      create: { name: 'Личное', color: '#10B981' },
-    }),
-    prisma.category.upsert({
-      where: { name: 'Важное' },
-      update: {},
-      create: { name: 'Важное', color: '#EF4444' },
-    }),
-    prisma.category.upsert({
-      where: { name: 'Здоровье' },
-      update: {},
-      create: { name: 'Здоровье', color: '#F59E0B' },
-    }),
-    prisma.category.upsert({
-      where: { name: 'Образование' },
-      update: {},
-      create: { name: 'Образование', color: '#8B5CF6' },
-    }),
-  ])
+const dbPath = path.resolve(__dirname, '..', 'dev.db')
+const db = new Database(dbPath)
 
-  console.log('Created categories:', categories)
-}
+// Создаем категории если их нет
+const categories = [
+  { id: 'cat-1', name: 'Работа', color: '#3B82F6' },
+  { id: 'cat-2', name: 'Личное', color: '#10B981' },
+  { id: 'cat-3', name: 'Важное', color: '#EF4444' },
+  { id: 'cat-4', name: 'Здоровье', color: '#F59E0B' },
+  { id: 'cat-5', name: 'Образование', color: '#8B5CF6' }
+]
 
-main()
-  .catch((e) => {
-    console.error(e)
-    process.exit(1)
-  })
-  .finally(async () => {
-    await prisma.$disconnect()
-  })
+const insert = db.prepare(`
+  INSERT OR IGNORE INTO Category (id, name, color) VALUES (@id, @name, @color)
+`)
+
+const insertMany = db.transaction((cats) => {
+  for (const cat of cats) {
+    insert.run(cat)
+  }
+})
+
+insertMany(categories)
+
+console.log('Created categories:', categories.map(c => c.name))
+db.close()

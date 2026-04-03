@@ -1,7 +1,6 @@
-import NuxtAuthHandler from '#auth'
+import { NuxtAuthHandler } from '#auth'
 import CredentialsProvider from 'next-auth/providers/credentials'
 import bcrypt from 'bcryptjs'
-import prisma from '~/server/utils/prisma'
 
 export default NuxtAuthHandler({
   providers: [

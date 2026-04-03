@@ -111,6 +111,16 @@
         @event-click="handleEventClick"
       />
     </section>
+
+    <!-- Модальное окно для создания/редактирования -->
+    <EventModal
+      :is-open="isEventModalOpen"
+      :event="selectedEvent"
+      :categories="categories"
+      @close="closeModal"
+      @save="handleSaveEvent"
+      @delete="handleDeleteEvent"
+    />
   </main>
 </template>
 
@@ -130,6 +140,8 @@ const view = computed(() => calendarStore.view)
 const filteredEvents = computed(() => calendarStore.filteredEvents)
 const categories = computed(() => calendarStore.categories)
 const selectedCategories = computed(() => calendarStore.selectedCategories)
+const isEventModalOpen = computed(() => calendarStore.isEventModalOpen)
+const selectedEvent = computed(() => calendarStore.selectedEvent)
 
 const viewOptions = [
   { label: 'День', value: 'day' },
@@ -199,6 +211,32 @@ const handleTimeSlotClick = (date: Date, hour: number) => {
 
 const handleDayTimeSlotClick = (hour: number) => {
   calendarStore.openCreateModal()
+}
+
+const closeModal = () => {
+  calendarStore.closeModal()
+}
+
+const handleSaveEvent = async (data: any) => {
+  if (selectedEvent.value) {
+    await calendarStore.updateEvent(selectedEvent.value.id, data)
+  } else {
+    await calendarStore.createEvent(data)
+  }
+  
+  // Перезагружаем ивенты
+  const start = new Date(currentDate.value.getFullYear(), currentDate.value.getMonth(), 1)
+  const end = new Date(currentDate.value.getFullYear(), currentDate.value.getMonth() + 1, 0)
+  await calendarStore.fetchEvents(start, end)
+}
+
+const handleDeleteEvent = async (id: string) => {
+  await calendarStore.deleteEvent(id)
+  
+  // Перезагружаем ивенты
+  const start = new Date(currentDate.value.getFullYear(), currentDate.value.getMonth(), 1)
+  const end = new Date(currentDate.value.getFullYear(), currentDate.value.getMonth() + 1, 0)
+  await calendarStore.fetchEvents(start, end)
 }
 
 const toggleCategory = (categoryId: string) => {

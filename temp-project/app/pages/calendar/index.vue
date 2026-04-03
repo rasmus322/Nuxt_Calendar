@@ -60,35 +60,24 @@
           >
             + Создать
           </button>
-          <!-- Фильтр по категориям -->
-          <details class="relative">
-            <summary class="px-4 py-2 text-sm border border-gray-300 rounded bg-white hover:bg-gray-50 cursor-pointer">
-              Категории
-            </summary>
-            <ul class="absolute right-0 mt-2 p-2 bg-white border border-gray-200 rounded shadow-lg min-w-48">
-              <li v-for="category in categories" :key="category.id">
-                <label class="flex items-center gap-2 px-2 py-1 cursor-pointer hover:bg-gray-50">
-                  <input
-                    type="checkbox"
-                    :checked="selectedCategories.includes(category.id)"
-                    :value="category.id"
-                    @change="toggleCategory(category.id)"
-                  />
-                  <span
-                    class="w-3 h-3 rounded-full"
-                    :style="{ backgroundColor: category.color }"
-                  ></span>
-                  <span class="text-sm">{{ category.name }}</span>
-                </label>
-              </li>
-            </ul>
-          </details>
         </section>
       </nav>
     </header>
 
-    <!-- Контент календаря -->
-    <section class="flex-1 p-4">
+    <!-- Основной контент -->
+    <section class="flex">
+      <!-- Боковая панель с категориями -->
+      <aside class="w-64 p-4 border-r border-gray-200 bg-white hidden lg:block">
+        <CategoryFilter
+          :categories="categories"
+          :selected-categories="selectedCategories"
+          @toggle="toggleCategory"
+          @clear="clearCategoryFilters"
+        />
+      </aside>
+
+      <!-- Контент календаря -->
+      <section class="flex-1 p-4">
       <CalendarMonth
         v-if="view === 'month'"
         :current-date="currentDate"
@@ -113,6 +102,7 @@
         @event-click="handleEventClick"
         @event-move="handleEventMoveDay"
       />
+      </section>
     </section>
 
     <!-- Модальное окно для создания/редактирования -->
@@ -244,6 +234,10 @@ const handleDeleteEvent = async (id: string) => {
 
 const toggleCategory = (categoryId: string) => {
   calendarStore.toggleCategory(categoryId)
+}
+
+const clearCategoryFilters = () => {
+  calendarStore.selectedCategories = []
 }
 
 // Drag & Drop handlers

@@ -32,11 +32,11 @@
             </button>
           </nav>
 
-          <!-- Навигация по месяцам -->
+          <!-- Навигация по месяцам/неделям/дням -->
           <button
             class="p-2 hover:bg-gray-100 rounded"
-            aria-label="Предыдущий месяц"
-            @click="goToPrevMonth"
+            :aria-label="view === 'month' ? 'Предыдущий месяц' : view === 'week' ? 'Предыдущая неделя' : 'Предыдущий день'"
+            @click="goToPrev"
           >
             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
@@ -44,8 +44,8 @@
           </button>
           <button
             class="p-2 hover:bg-gray-100 rounded"
-            aria-label="Следующий месяц"
-            @click="goToNextMonth"
+            :aria-label="view === 'month' ? 'Следующий месяц' : view === 'week' ? 'Следующая неделя' : 'Следующий день'"
+            @click="goToNext"
           >
             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
@@ -96,6 +96,13 @@
         @day-click="handleDayClick"
         @event-click="handleEventClick"
       />
+      <CalendarWeek
+        v-else-if="view === 'week'"
+        :current-date="currentDate"
+        :events="filteredEvents"
+        @time-slot-click="handleTimeSlotClick"
+        @event-click="handleEventClick"
+      />
     </section>
   </main>
 </template>
@@ -141,15 +148,27 @@ const goToToday = () => {
   calendarStore.setCurrentDate(new Date())
 }
 
-const goToPrevMonth = () => {
+const goToPrev = () => {
   const date = new Date(currentDate.value)
-  date.setMonth(date.getMonth() - 1)
+  if (view.value === 'month') {
+    date.setMonth(date.getMonth() - 1)
+  } else if (view.value === 'week') {
+    date.setDate(date.getDate() - 7)
+  } else {
+    date.setDate(date.getDate() - 1)
+  }
   calendarStore.setCurrentDate(date)
 }
 
-const goToNextMonth = () => {
+const goToNext = () => {
   const date = new Date(currentDate.value)
-  date.setMonth(date.getMonth() + 1)
+  if (view.value === 'month') {
+    date.setMonth(date.getMonth() + 1)
+  } else if (view.value === 'week') {
+    date.setDate(date.getDate() + 7)
+  } else {
+    date.setDate(date.getDate() + 1)
+  }
   calendarStore.setCurrentDate(date)
 }
 
@@ -164,6 +183,11 @@ const handleDayClick = (date: Date) => {
 
 const handleEventClick = (event: any) => {
   calendarStore.openEditModal(event)
+}
+
+const handleTimeSlotClick = (date: Date, hour: number) => {
+  calendarStore.setCurrentDate(date)
+  calendarStore.openCreateModal()
 }
 
 const toggleCategory = (categoryId: string) => {

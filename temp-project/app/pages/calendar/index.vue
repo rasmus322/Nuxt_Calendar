@@ -95,6 +95,7 @@
         :events="filteredEvents"
         @day-click="handleDayClick"
         @event-click="handleEventClick"
+        @event-move="handleEventMove"
       />
       <CalendarWeek
         v-else-if="view === 'week'"
@@ -102,6 +103,7 @@
         :events="filteredEvents"
         @time-slot-click="handleTimeSlotClick"
         @event-click="handleEventClick"
+        @event-move="handleEventMoveWeek"
       />
       <CalendarDay
         v-else-if="view === 'day'"
@@ -109,6 +111,7 @@
         :events="filteredEvents"
         @time-slot-click="handleDayTimeSlotClick"
         @event-click="handleEventClick"
+        @event-move="handleEventMoveDay"
       />
     </section>
 
@@ -241,5 +244,78 @@ const handleDeleteEvent = async (id: string) => {
 
 const toggleCategory = (categoryId: string) => {
   calendarStore.toggleCategory(categoryId)
+}
+
+// Drag & Drop handlers
+const handleEventMove = async (eventId: string, newDate: Date) => {
+  // Находим событие
+  const event = calendarStore.events.find(e => e.id === eventId)
+  if (!event) return
+
+  const oldStart = new Date(event.start)
+  const oldEnd = new Date(event.end)
+  const duration = oldEnd.getTime() - oldStart.getTime()
+
+  // Создаем новые даты с сохранением времени
+  const newStart = new Date(newDate)
+  newStart.setHours(oldStart.getHours(), oldStart.getMinutes(), oldStart.getSeconds())
+  
+  const newEnd = new Date(newStart.getTime() + duration)
+
+  await calendarStore.updateEvent(eventId, {
+    start: newStart.toISOString(),
+    end: newEnd.toISOString()
+  })
+
+  // Перезагружаем ивенты
+  const start = new Date(currentDate.value.getFullYear(), currentDate.value.getMonth(), 1)
+  const end = new Date(currentDate.value.getFullYear(), currentDate.value.getMonth() + 1, 0)
+  await calendarStore.fetchEvents(start, end)
+}
+
+const handleEventMoveWeek = async (eventId: string, newDate: Date, newHour: number) => {
+  const event = calendarStore.events.find(e => e.id === eventId)
+  if (!event) return
+
+  const oldStart = new Date(event.start)
+  const oldEnd = new Date(event.end)
+  const duration = oldEnd.getTime() - oldStart.getTime()
+
+  const newStart = new Date(newDate)
+  newStart.setHours(newHour, oldStart.getMinutes(), oldStart.getSeconds())
+  
+  const newEnd = new Date(newStart.getTime() + duration)
+
+  await calendarStore.updateEvent(eventId, {
+    start: newStart.toISOString(),
+    end: newEnd.toISOString()
+  })
+
+  const start = new Date(currentDate.value.getFullYear(), currentDate.value.getMonth(), 1)
+  const end = new Date(currentDate.value.getFullYear(), currentDate.value.getMonth() + 1, 0)
+  await calendarStore.fetchEvents(start, end)
+}
+
+const handleEventMoveDay = async (eventId: string, newHour: number) => {
+  const event = calendarStore.events.find(e => e.id === eventId)
+  if (!event) return
+
+  const oldStart = new Date(event.start)
+  const oldEnd = new Date(event.end)
+  const duration = oldEnd.getTime() - oldStart.getTime()
+
+  const newStart = new Date(oldStart)
+  newStart.setHours(newHour, oldStart.getMinutes(), oldStart.getSeconds())
+  
+  const newEnd = new Date(newStart.getTime() + duration)
+
+  await calendarStore.updateEvent(eventId, {
+    start: newStart.toISOString(),
+    end: newEnd.toISOString()
+  })
+
+  const start = new Date(currentDate.value.getFullYear(), currentDate.value.getMonth(), 1)
+  const end = new Date(currentDate.value.getFullYear(), currentDate.value.getMonth() + 1, 0)
+  await calendarStore.fetchEvents(start, end)
 }
 </script>

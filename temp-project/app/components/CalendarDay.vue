@@ -36,7 +36,11 @@
           v-for="hour in hours"
           :key="hour"
           class="h-20 border-b border-gray-100 hover:bg-gray-50 cursor-pointer"
+          :class="{ 'bg-blue-50': isDropTarget === hour }"
           @click="handleTimeSlotClick(hour)"
+          @dragover.prevent="handleDragOver(hour)"
+          @dragleave="handleDragLeave"
+          @drop="handleDrop(hour)"
         ></div>
 
         <!-- Ивенты -->
@@ -51,7 +55,10 @@
             height: `${getEventHeight(event)}px`
           }"
           :title="event.title"
+          draggable="true"
           @click="handleEventClick(event)"
+          @dragstart="handleDragStart($event, event)"
+          @dragend="handleDragEnd"
         >
           <div class="font-semibold">{{ event.title }}</div>
           <div class="text-xs opacity-90 mt-1">
@@ -67,7 +74,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue'
+import { computed, ref } from 'vue'
 import type { CalendarEvent } from '~/types/calendar'
 import { isToday, formatDate, formatTime, getDayName, getMonthName } from '~/utils/date'
 
@@ -79,9 +86,12 @@ const props = defineProps<{
 const emit = defineEmits<{
   timeSlotClick: [hour: number]
   eventClick: [event: CalendarEvent]
+  eventMove: [eventId: string, newHour: number]
 }>()
 
 const hours = Array.from({ length: 24 }, (_, i) => i)
+const draggedEvent = ref<CalendarEvent | null>(null)
+const isDropTarget = ref<number | null>(null)
 
 const dayEvents = computed(() => {
   return props.events.filter(event => {
@@ -115,5 +125,35 @@ const handleTimeSlotClick = (hour: number) => {
 
 const handleEventClick = (event: CalendarEvent) => {
   emit('eventClick', event)
+}
+
+const handleDragStart = (event: DragEvent, calendarEvent: CalendarEvent) => {
+  draggedEvent.value = calendarEvent
+  if (event.dataTransfer) {
+    event.dataTransfer.effectAllowed = 'move'
+    event.dataTransfer.setData('text/plain', calendarEvent.id)
+  }
+}
+
+const handleDragEnd = () => {
+  draggedEvent.value = null
+  isDropTarget.value = null
+}
+
+const handleDragOver = (hour: number) => {
+  isDropTarget.value = hour
+}
+
+const handleDragLeave = () => {
+  isDropTarget.value = null
+}
+
+const handleDrop = (hour: number) => {
+  isDropTarget.value = null
+  
+  if (draggedEvent.value) {
+    emit('eventMove', draggedEvent.value.id, hour)
+    draggedEvent.value = null
+  }
 }
 </script>

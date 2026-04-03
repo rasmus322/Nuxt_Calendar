@@ -17,7 +17,7 @@
       <article
         v-for="(day, index) in days"
         :key="index"
-        class="min-h-24 bg-white border border-gray-200 p-1 cursor-pointer hover:bg-gray-50 transition-colors"
+        class="min-h-16 sm:min-h-24 bg-white border border-gray-200 p-1 cursor-pointer hover:bg-gray-50 transition-colors"
         :class="{
           'bg-gray-50': day.getMonth() !== currentDate.getMonth(),
           'ring-2 ring-blue-500': isToday(day),
@@ -45,9 +45,9 @@
         <!-- Ивенты на день -->
         <ul class="space-y-1" aria-label="Ивенты на {{ day.getDate() }}">
           <li
-            v-for="event in getEventsForDay(day)"
+            v-for="event in getEventsForDay(day).slice(0, 2)"
             :key="event.id"
-            class="text-xs px-2 py-1 rounded truncate cursor-pointer hover:opacity-80 transition-opacity"
+            class="text-xs px-1 sm:px-2 py-1 rounded truncate cursor-pointer hover:opacity-80 transition-opacity"
             :style="{ backgroundColor: event.color || event.category?.color || '#3B82F6' }"
             :title="event.title"
             role="listitem"
@@ -56,7 +56,8 @@
             @dragstart="handleDragStart($event, event)"
             @dragend="handleDragEnd"
           >
-            {{ event.title }}
+            <span class="hidden sm:inline">{{ event.title }}</span>
+            <span class="sm:hidden w-2 h-2 block rounded-full bg-white"></span>
           </li>
           <li
             v-if="getEventsForDay(day).length > 3"

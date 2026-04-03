@@ -1,27 +1,27 @@
 <template>
   <main class="min-h-screen bg-gray-50">
     <!-- Навигация -->
-    <header class="bg-white border-b border-gray-200 px-4 py-3">
-      <nav class="flex items-center justify-between" aria-label="Навигация по календарю">
-        <section class="flex items-center gap-4">
-          <h1 class="text-2xl font-bold text-gray-900">
+    <header class="bg-white border-b border-gray-200 px-3 sm:px-4 py-3">
+      <nav class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3" aria-label="Навигация по календарю">
+        <section class="flex items-center justify-between gap-2">
+          <h1 class="text-lg sm:text-2xl font-bold text-gray-900">
             {{ getMonthName(currentDate) }} {{ currentDate.getFullYear() }}
           </h1>
           <button
-            class="px-3 py-1 text-sm border border-gray-300 rounded hover:bg-gray-50"
+            class="px-2 sm:px-3 py-1 text-xs sm:text-sm border border-gray-300 rounded hover:bg-gray-50"
             @click="goToToday"
           >
             Сегодня
           </button>
         </section>
 
-        <section class="flex items-center gap-2">
+        <section class="flex items-center gap-2 flex-wrap">
           <!-- Переключение вида -->
           <nav class="inline-flex rounded-md shadow-sm" aria-label="Переключение вида календаря">
             <button
               v-for="viewOption in viewOptions"
               :key="viewOption.value"
-              class="px-4 py-2 text-sm border"
+              class="px-2 sm:px-4 py-2 text-xs sm:text-sm border"
               :class="{
                 'bg-blue-600 text-white border-blue-600': view === viewOption.value,
                 'bg-white text-gray-700 hover:bg-gray-50 border-gray-300': view !== viewOption.value
@@ -55,10 +55,17 @@
 
         <section class="flex items-center gap-2">
           <button
-            class="px-4 py-2 text-sm bg-blue-600 text-white rounded hover:bg-blue-700"
+            class="px-3 sm:px-4 py-2 text-xs sm:text-sm bg-blue-600 text-white rounded hover:bg-blue-700"
             @click="createEvent"
           >
             + Создать
+          </button>
+          <!-- Мобильная кнопка для категорий -->
+          <button
+            class="lg:hidden px-3 sm:px-4 py-2 text-xs sm:text-sm border border-gray-300 rounded bg-white hover:bg-gray-50"
+            @click="toggleMobileCategoryFilter"
+          >
+            Фильтр
           </button>
         </section>
       </nav>
@@ -105,6 +112,38 @@
       </section>
     </section>
 
+    <!-- Мобильный фильтр -->
+    <Teleport to="body">
+      <aside
+        v-if="isMobileFilterOpen"
+        class="fixed inset-0 z-50 bg-black bg-opacity-50 lg:hidden"
+        @click="calendarStore.closeMobileFilter()"
+      >
+        <section
+          class="absolute bottom-0 left-0 right-0 bg-white rounded-t-lg p-4 max-h-[70vh] overflow-y-auto"
+          @click.stop
+        >
+          <header class="flex items-center justify-between mb-4">
+            <h2 class="text-lg font-semibold">Фильтр по категориям</h2>
+            <button
+              class="p-2 hover:bg-gray-100 rounded"
+              @click="calendarStore.closeMobileFilter()"
+            >
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+          </header>
+          <CategoryFilter
+            :categories="categories"
+            :selected-categories="selectedCategories"
+            @toggle="toggleCategory"
+            @clear="clearCategoryFilters"
+          />
+        </section>
+      </aside>
+    </Teleport>
+
     <!-- Модальное окно для создания/редактирования -->
     <EventModal
       :is-open="isEventModalOpen"
@@ -135,6 +174,7 @@ const categories = computed(() => calendarStore.categories)
 const selectedCategories = computed(() => calendarStore.selectedCategories)
 const isEventModalOpen = computed(() => calendarStore.isEventModalOpen)
 const selectedEvent = computed(() => calendarStore.selectedEvent)
+const isMobileFilterOpen = computed(() => calendarStore.isMobileFilterOpen)
 
 const viewOptions = [
   { label: 'День', value: 'day' },
@@ -238,6 +278,10 @@ const toggleCategory = (categoryId: string) => {
 
 const clearCategoryFilters = () => {
   calendarStore.selectedCategories = []
+}
+
+const toggleMobileCategoryFilter = () => {
+  calendarStore.toggleMobileFilter()
 }
 
 // Drag & Drop handlers

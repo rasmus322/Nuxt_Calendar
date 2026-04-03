@@ -11,6 +11,7 @@ export const useCalendarStore = defineStore('calendar', {
     isLoading: false,
     selectedEvent: null as CalendarEvent | null,
     isEventModalOpen: false,
+    isMobileFilterOpen: false,
   }),
 
   getters: {
@@ -124,6 +125,14 @@ export const useCalendarStore = defineStore('calendar', {
       } else {
         this.selectedCategories.splice(index, 1)
       }
+    },
+
+    toggleMobileFilter() {
+      this.isMobileFilterOpen = !this.isMobileFilterOpen
+    },
+
+    closeMobileFilter() {
+      this.isMobileFilterOpen = false
     },
   },
 })

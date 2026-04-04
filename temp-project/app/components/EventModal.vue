@@ -8,7 +8,7 @@
       :aria-labelledby="dialogTitle"
       @click="handleBackdropClick"
     >
-      <section class="bg-white rounded-lg shadow-xl max-w-lg w-full mx-4 max-h-[90vh] overflow-y-auto">
+      <section class="bg-white rounded-lg shadow-xl max-w-lg w-full mx-4 max-h-[90vh] overflow-y-auto" @click.stop>
         <!-- Заголовок -->
         <header class="px-6 py-4 border-b border-gray-200">
           <h2 :id="dialogTitle" class="text-xl font-semibold text-gray-900">
@@ -182,6 +182,7 @@ const props = defineProps<{
   isOpen: boolean
   event: CalendarEvent | null
   categories: Category[]
+  selectedDate?: Date | null
 }>()
 
 const emit = defineEmits<{
@@ -219,11 +220,11 @@ const colorOptions = [
 ]
 
 // Заполняем форму при открытии
-watch(() => props.event, (event) => {
+watch(() => [props.event, props.isOpen, props.selectedDate], ([event, isOpen, selectedDate]) => {
   if (event) {
     const startDate = new Date(event.start)
     const endDate = new Date(event.end)
-    
+
     formData.value = {
       title: event.title,
       description: event.description || '',
@@ -234,18 +235,25 @@ watch(() => props.event, (event) => {
       categoryId: event.categoryId || null,
       color: event.color || event.category?.color || '#3B82F6'
     }
-  } else {
-    // Сброс формы для нового события
+  } else if (isOpen) {
+    // Для нового события используем выбранную дату или сегодня
+    const baseDate = selectedDate || new Date()
     const now = new Date()
-    const oneHourLater = new Date(now.getTime() + 60 * 60 * 1000)
     
+    // Создаем дату начала на основе selectedDate, но с текущим временем
+    const startDate = new Date(baseDate)
+    startDate.setHours(now.getHours(), now.getMinutes(), 0, 0)
+    
+    // Создаем дату окончания (через час)
+    const endDate = new Date(startDate.getTime() + 60 * 60 * 1000)
+
     formData.value = {
       title: '',
       description: '',
-      startDate: now.toISOString().split('T')[0],
-      startTime: now.toTimeString().slice(0, 5),
-      endDate: oneHourLater.toISOString().split('T')[0],
-      endTime: oneHourLater.toTimeString().slice(0, 5),
+      startDate: startDate.toISOString().split('T')[0],
+      startTime: startDate.toTimeString().slice(0, 5),
+      endDate: endDate.toISOString().split('T')[0],
+      endTime: endDate.toTimeString().slice(0, 5),
       categoryId: null,
       color: '#3B82F6'
     }

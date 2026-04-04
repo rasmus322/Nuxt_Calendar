@@ -149,6 +149,7 @@
       :is-open="isEventModalOpen"
       :event="selectedEvent"
       :categories="categories"
+      :selected-date="currentDate"
       @close="closeModal"
       @save="handleSaveEvent"
       @delete="handleDeleteEvent"

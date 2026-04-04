@@ -161,10 +161,6 @@ import { onMounted } from 'vue'
 import { useCalendarStore } from '~/stores/calendar'
 import { getMonthName } from '~/utils/date'
 
-definePageMeta({
-  middleware: 'auth'
-})
-
 const calendarStore = useCalendarStore()
 
 const currentDate = computed(() => calendarStore.currentDate)

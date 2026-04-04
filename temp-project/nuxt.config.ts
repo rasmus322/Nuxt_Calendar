@@ -5,17 +5,8 @@ export default defineNuxtConfig({
   
   modules: [
     '@pinia/nuxt',
-    '@sidebase/nuxt-auth',
+    '@nuxtjs/tailwindcss',
   ],
-
-  css: ['~/assets/css/main.css'],
-
-  auth: {
-    provider: {
-      type: 'authjs',
-      origin: process.env.AUTH_ORIGIN || 'http://localhost:3000',
-    },
-  },
 
   typescript: {
     strict: true,

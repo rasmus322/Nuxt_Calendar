@@ -1,13 +1,6 @@
 import { defineEventHandler, readBody } from 'h3'
-import { getServerSession } from '#auth'
 
 export default defineEventHandler(async (event) => {
-  const session = await getServerSession(event)
-  
-  if (!session?.user?.id) {
-    throw createError({ statusCode: 401, message: 'Unauthorized' })
-  }
-
   const body = await readBody(event)
   const { title, description, start, end, categoryId, color } = body
 
@@ -26,7 +19,7 @@ export default defineEventHandler(async (event) => {
       end: new Date(end),
       categoryId,
       color,
-      userId: session.user.id
+      userId: 'demo-user'
     },
     include: {
       category: true

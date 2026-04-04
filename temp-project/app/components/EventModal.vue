@@ -42,7 +42,7 @@
               id="event-description"
               v-model="formData.description"
               rows="3"
-              class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none"
               placeholder="Добавьте описание (необязательно)"
             ></textarea>
           </div>
@@ -118,24 +118,6 @@
                 {{ category.name }}
               </option>
             </select>
-          </div>
-
-          <!-- Цвет -->
-          <div>
-            <label for="event-color" class="block text-sm font-medium text-gray-700 mb-1">
-              Цвет события
-            </label>
-            <div class="flex gap-2 flex-wrap">
-              <button
-                v-for="color in colorOptions"
-                :key="color"
-                type="button"
-                class="w-8 h-8 rounded-full border-2 transition-all"
-                :class="{ 'border-gray-900 scale-110': formData.color === color, 'border-gray-300': formData.color !== color }"
-                :style="{ backgroundColor: color }"
-                @click="formData.color = color"
-              ></button>
-            </div>
           </div>
 
           <!-- Ошибки -->
@@ -219,6 +201,13 @@ const colorOptions = [
   '#6B7280', // Серый
 ]
 
+// Получаем цвет на основе выбранной категории
+const selectedCategoryColor = computed(() => {
+  if (!formData.value.categoryId) return '#3B82F6' // Default color
+  const category = props.categories.find(c => c.id === formData.value.categoryId)
+  return category?.color || '#3B82F6'
+})
+
 // Заполняем форму при открытии
 watch(() => [props.event, props.isOpen, props.selectedDate], ([event, isOpen, selectedDate]) => {
   if (event) {
@@ -239,26 +228,39 @@ watch(() => [props.event, props.isOpen, props.selectedDate], ([event, isOpen, se
     // Для нового события используем выбранную дату или сегодня
     const baseDate = selectedDate || new Date()
     const now = new Date()
-    
+
     // Создаем дату начала на основе selectedDate, но с текущим временем
-    const startDate = new Date(baseDate)
-    startDate.setHours(now.getHours(), now.getMinutes(), 0, 0)
+    // Используем локализованные методы для корректной работы с часовыми поясами
+    const year = baseDate.getFullYear()
+    const month = String(baseDate.getMonth() + 1).padStart(2, '0')
+    const day = String(baseDate.getDate()).padStart(2, '0')
+    const startDateStr = `${year}-${month}-${day}`
+    
+    const hours = String(now.getHours()).padStart(2, '0')
+    const minutes = String(now.getMinutes()).padStart(2, '0')
+    const startTimeStr = `${hours}:${minutes}`
     
     // Создаем дату окончания (через час)
-    const endDate = new Date(startDate.getTime() + 60 * 60 * 1000)
+    const endHours = now.getHours() + 1
+    const endTimeStr = `${String(endHours).padStart(2, '0')}:${minutes}`
 
     formData.value = {
       title: '',
       description: '',
-      startDate: startDate.toISOString().split('T')[0],
-      startTime: startDate.toTimeString().slice(0, 5),
-      endDate: endDate.toISOString().split('T')[0],
-      endTime: endDate.toTimeString().slice(0, 5),
+      startDate: startDateStr,
+      startTime: startTimeStr,
+      endDate: startDateStr,
+      endTime: endTimeStr,
       categoryId: null,
-      color: '#3B82F6'
+      color: selectedCategoryColor.value
     }
   }
 }, { immediate: true })
+
+// Автоматически обновляем цвет при смене категории
+watch(() => formData.value.categoryId, () => {
+  formData.value.color = selectedCategoryColor.value
+})
 
 const handleSubmit = async () => {
   error.value = ''

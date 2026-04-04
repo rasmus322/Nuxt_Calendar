@@ -12,6 +12,7 @@ export const useCalendarStore = defineStore('calendar', {
     selectedEvent: null as CalendarEvent | null,
     isEventModalOpen: false,
     isMobileFilterOpen: false,
+    selectedDateForNewEvent: null as Date | null,
   }),
 
   getters: {
@@ -103,13 +104,15 @@ export const useCalendarStore = defineStore('calendar', {
       this.isEventModalOpen = false
     },
 
-    openCreateModal() {
+    openCreateModal(selectedDate?: Date) {
       this.selectedEvent = null
+      this.selectedDateForNewEvent = selectedDate || null
       this.isEventModalOpen = true
     },
 
     openEditModal(event: CalendarEvent) {
       this.selectedEvent = event
+      this.selectedDateForNewEvent = null
       this.isEventModalOpen = true
     },
 

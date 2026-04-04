@@ -149,7 +149,7 @@
       :is-open="isEventModalOpen"
       :event="selectedEvent"
       :categories="categories"
-      :selected-date="currentDate"
+      :selected-date="selectedDateForNewEvent || currentDate"
       @close="closeModal"
       @save="handleSaveEvent"
       @delete="handleDeleteEvent"
@@ -172,6 +172,7 @@ const selectedCategories = computed(() => calendarStore.selectedCategories)
 const isEventModalOpen = computed(() => calendarStore.isEventModalOpen)
 const selectedEvent = computed(() => calendarStore.selectedEvent)
 const isMobileFilterOpen = computed(() => calendarStore.isMobileFilterOpen)
+const selectedDateForNewEvent = computed(() => calendarStore.selectedDateForNewEvent)
 
 const viewOptions = [
   { label: 'День', value: 'day' },
@@ -222,12 +223,12 @@ const goToNext = () => {
 }
 
 const createEvent = () => {
-  calendarStore.openCreateModal()
+  calendarStore.openCreateModal(new Date())
 }
 
 const handleDayClick = (date: Date) => {
   calendarStore.setCurrentDate(date)
-  calendarStore.openCreateModal()
+  calendarStore.openCreateModal(date)
 }
 
 const handleEventClick = (event: any) => {
@@ -236,11 +237,11 @@ const handleEventClick = (event: any) => {
 
 const handleTimeSlotClick = (date: Date, hour: number) => {
   calendarStore.setCurrentDate(date)
-  calendarStore.openCreateModal()
+  calendarStore.openCreateModal(date)
 }
 
 const handleDayTimeSlotClick = (hour: number) => {
-  calendarStore.openCreateModal()
+  calendarStore.openCreateModal(currentDate.value)
 }
 
 const closeModal = () => {
